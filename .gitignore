@@ -26,6 +26,10 @@ Thumbs.db
 
 # Project specific
 builds/*.exe
+builds/*.tar.gz
+builds/release-notes-*.md
+create_*.py
+generate_*.py
 internals/
 *.log
 status.md
