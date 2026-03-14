@@ -1,0 +1,90 @@
+name: Build Linux Packages
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pil python3-tk dpkg-dev
+          
+      - name: Build Debian package
+        run: |
+          chmod +x build-linux.sh
+          ./build-linux.sh
+          
+      - name: Upload .deb to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: builds/*.deb
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  build-rpm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install RPM build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm python3-pil python3-tk
+          
+      - name: Build RPM package
+        run: |
+          mkdir -p builds
+          rpmbuild -bb rpm/folder-zipper-versioning.spec --define "_topdir $PWD/rpmbuild"
+          mkdir -p builds
+          mv rpmbuild/RPMS/noarch/*.rpm builds/ || mv rpmbuild/RPMS/x86_64/*.rpm builds/ || true
+          
+      - name: Upload .rpm to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: builds/*.rpm
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  build-arch:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm python python-pip python-pillow python-tkinter base-devel git
+          
+      - name: Build Arch package
+        run: |
+          cd arch-linux
+          makepkg --syncdeps --cleanbuild --noconfirm
+          mkdir -p ../builds
+          mv *.pkg.tar.zst ../builds/ || true
+          
+      - name: Upload .pkg.tar.zst to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: builds/*.pkg.tar.zst
+          tag: ${{ github.ref }}
+          overwrite: true
