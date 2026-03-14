@@ -2,7 +2,7 @@ name: Build Linux Packages
 
 on:
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -10,22 +10,58 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pil python3-tk dpkg-dev
-          
+
+      - name: Set up Debian package structure
+        run: |
+          # Create package directories
+          mkdir -p debian-pkg/usr/bin
+          mkdir -p debian-pkg/usr/share/applications
+          mkdir -p debian-pkg/usr/share/icons/hicolor/1024x1024/apps
+          mkdir -p debian-pkg/DEBIAN
+
+          # Copy application files
+          cp app-files/zipper.py debian-pkg/usr/bin/folderzipper-versioning.py
+          cp app-files/app_icon.png debian-pkg/usr/share/icons/hicolor/1024x1024/apps/folderzipper-versioning.png
+          cp debian/usr/share/applications/folder-zipper-versioning.desktop debian-pkg/usr/share/applications/
+
+          # Create launcher script
+          cat > debian-pkg/usr/bin/folderzipper-versioning << 'EOF'
+          #!/bin/bash
+          python3 /usr/bin/folderzipper-versioning.py "$@"
+          EOF
+          chmod +x debian-pkg/usr/bin/folderzipper-versioning
+
+          # Create control file
+          cat > debian-pkg/DEBIAN/control << 'EOF'
+          Package: folder-zipper-versioning
+          Version: 1.0
+          Section: utils
+          Priority: optional
+          Architecture: all
+          Depends: python3, python3-tk, python3-pil
+          Maintainer: codingismynewgaming
+          Description: Folder Zipper with automatic versioning
+           A Python Tkinter GUI application that zips folders with automatic
+           version numbering and custom version support.
+          Homepage: https://github.com/codingismynewgaming/folder-zip-versioning
+          EOF
+
+          # Create postinst script
+          cat > debian-pkg/DEBIAN/postinst << 'EOF'
+          #!/bin/bash
+          update-desktop-database || true
+          EOF
+          chmod +x debian-pkg/DEBIAN/postinst
+
       - name: Build Debian package
         run: |
-          chmod +x build-linux.sh
-          ./build-linux.sh
-          
+          dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.0_all.deb
+
       - name: Upload .deb to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -38,24 +74,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          
+
       - name: Install RPM build tools
         run: |
           sudo apt-get update
           sudo apt-get install -y rpm python3-pil python3-tk
-          
+
+      - name: Set up RPM build environment
+        run: |
+          mkdir -p rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+      - name: Create source tarball
+        run: |
+          tar -czf rpmbuild/SOURCES/folder-zipper-versioning-1.0.tar.gz \
+            --exclude=".git" \
+            --exclude="builds" \
+            --exclude="internals" \
+            --exclude="__pycache__" \
+            --exclude="*.pyc" \
+            --exclude=".github" \
+            app-files debian arch-linux rpm build-linux.sh LICENSE README.md
+
       - name: Build RPM package
         run: |
-          mkdir -p builds
           rpmbuild -bb rpm/folder-zipper-versioning.spec --define "_topdir $PWD/rpmbuild"
           mkdir -p builds
-          mv rpmbuild/RPMS/noarch/*.rpm builds/ || mv rpmbuild/RPMS/x86_64/*.rpm builds/ || true
-          
+          find rpmbuild/RPMS -name "*.rpm" -exec mv {} builds/ \;
+
       - name: Upload .rpm to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -69,18 +114,20 @@ jobs:
     container: archlinux:latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install dependencies
         run: |
-          pacman -Syu --noconfirm python python-pip python-pillow python-tkinter base-devel git
-          
+          pacman -Syu --noconfirm python python-pillow python-tkinter base-devel git
+
       - name: Build Arch package
         run: |
           cd arch-linux
+          # Update PKGBUILD version
+          sed -i 's/pkgver=.*/pkgver=1.0/' PKGBUILD
           makepkg --syncdeps --cleanbuild --noconfirm
           mkdir -p ../builds
-          mv *.pkg.tar.zst ../builds/ || true
-          
+          cp *.pkg.tar.zst ../builds/ || true
+
       - name: Upload .pkg.tar.zst to release
         uses: svenstaro/upload-release-action@v2
         with:
