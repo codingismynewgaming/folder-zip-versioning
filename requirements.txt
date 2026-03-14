@@ -1,0 +1,6 @@
+# FolderZipperVersioning Dependencies
+# Uses only Python standard library modules:
+# - tkinter, zipfile, os, pathlib, re, datetime, winreg
+# No external dependencies required for running!
+
+pyinstaller>=6.0.0
