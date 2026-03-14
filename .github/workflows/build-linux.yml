@@ -11,11 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pil python3-tk dpkg-dev
-
       - name: Set up Debian package structure
         run: |
           # Create package directories
@@ -59,8 +54,11 @@ jobs:
           chmod 755 debian-pkg/DEBIAN/postinst
 
       - name: Build Debian package
-        run: |
-          dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.0_all.deb
+        uses: jtdor/build-deb-action@v1
+        with:
+          source-dir: debian-pkg
+          buildpackage-opts: --build=binary --no-sign
+          artifacts-dir: builds
 
       - name: Upload .deb to release
         uses: svenstaro/upload-release-action@v2
@@ -75,50 +73,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install RPM build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rpm python3-pil python3-tk
-
       - name: Set up RPM build environment
         run: |
-          mkdir -p rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-          # Copy spec file to correct location
-          cp rpm/folder-zipper-versioning.spec rpmbuild/SPECS/
-
-      - name: Create source tarball
-        run: |
-          tar -czf rpmbuild/SOURCES/folder-zipper-versioning-1.0.tar.gz \
+          mkdir -p rpm-build/{SOURCES,SPECS}
+          cp rpm/folder-zipper-versioning.spec rpm-build/SPECS/
+          cp rpm/icon.png rpm-build/SOURCES/
+          cp rpm/folder-zipper-versioning.desktop rpm-build/SOURCES/
+          
+          # Create source tarball
+          tar -czf rpm-build/SOURCES/folder-zipper-versioning-1.0.tar.gz \
             --exclude=".git" \
             --exclude="builds" \
             --exclude="internals" \
             --exclude="__pycache__" \
             --exclude="*.pyc" \
             --exclude=".github" \
+            --exclude="debian-pkg" \
             app-files debian arch-linux rpm build-linux.sh LICENSE README.md
 
-      - name: Copy additional sources
-        run: |
-          cp rpm/icon.png rpmbuild/SOURCES/
-          cp rpm/folder-zipper-versioning.desktop rpmbuild/SOURCES/
-
       - name: Build RPM package
-        run: |
-          rpmbuild -bb rpmbuild/SPECS/folder-zipper-versioning.spec
-          mkdir -p builds
-          find rpmbuild/RPMS -name "*.rpm" -exec mv {} builds/ \;
+        uses: naveenrajm7/rpmbuild@master
+        id: rpm_build
+        with:
+          spec_file: "rpm-build/SPECS/folder-zipper-versioning.spec"
 
       - name: Upload .rpm to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: builds/*.rpm
+          file: ${{ steps.rpm_build.outputs.rpm_dir_path }}/*.rpm
           tag: ${{ github.ref }}
           overwrite: true
 
   build-arch:
     runs-on: ubuntu-latest
-    container: archlinux:latest
+    container:
+      image: archlinux
+      options: --privileged
     steps:
       - uses: actions/checkout@v4
 
@@ -127,13 +118,10 @@ jobs:
           pacman -Syu --noconfirm python python-pillow tk base-devel git
 
       - name: Build Arch package
-        run: |
-          cd arch-linux
-          # Update PKGBUILD version
-          sed -i 's/pkgver=.*/pkgver=1.0/' PKGBUILD
-          makepkg --syncdeps --cleanbuild --noconfirm
-          mkdir -p ../builds
-          cp *.pkg.tar.zst ../builds/ || true
+        uses: FFY00/build-arch-package@v1
+        with:
+          PKGBUILD: arch-linux/PKGBUILD
+          OUTDIR: builds
 
       - name: Upload .pkg.tar.zst to release
         uses: svenstaro/upload-release-action@v2
