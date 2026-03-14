@@ -167,7 +167,55 @@ class FolderZipperApp:
             wraplength=600
         )
         self.status_label.grid(row=5, column=0, pady=(0, 10))
-        
+
+        # Support & Feedback section
+        support_frame = ttk.Frame(main_frame)
+        support_frame.grid(row=6, column=0, pady=(10, 10))
+
+        # Support label
+        support_label = ttk.Label(
+            support_frame,
+            text="Support & Feedback:",
+            font=('Segoe UI', 9, 'bold')
+        )
+        support_label.grid(row=0, column=0, pady=(0, 5))
+
+        # Donation buttons frame
+        donate_frame = ttk.Frame(support_frame)
+        donate_frame.grid(row=1, column=0, pady=(5, 0))
+
+        # Buy Me a Coffee button
+        coffee_btn = ttk.Button(
+            donate_frame,
+            text="☕ Buy Me a Coffee",
+            command=self.open_coffee_link,
+            width=20
+        )
+        coffee_btn.grid(row=0, column=0, padx=(0, 5))
+
+        # PayPal button
+        paypal_btn = ttk.Button(
+            donate_frame,
+            text="💳 PayPal Donate",
+            command=self.open_paypal_link,
+            width=20
+        )
+        paypal_btn.grid(row=0, column=1, padx=(5, 0))
+
+        # GitHub issues link
+        github_frame = ttk.Frame(support_frame)
+        github_frame.grid(row=2, column=0, pady=(5, 0))
+
+        github_link = ttk.Label(
+            github_frame,
+            text="🐛 Report Issue / Request Feature",
+            font=('Segoe UI', 9),
+            foreground='#0066CC',
+            cursor="hand2"
+        )
+        github_link.grid(row=0, column=0)
+        github_link.bind("<Button-1>", lambda e: self.open_github_issues())
+
         # Load initial directory (start from parent of app-files folder)
         self.load_directory(self.start_directory)
         
@@ -431,6 +479,21 @@ class FolderZipperApp:
             self.status_label.config(text="⚠ Permission denied", foreground='red')
         except Exception as e:
             self.status_label.config(text=f"⚠ Error: {str(e)}", foreground='red')
+
+    def open_coffee_link(self):
+        """Open Buy Me a Coffee donation page."""
+        import webbrowser
+        webbrowser.open("https://buymeacoffee.com/codingiymynewgaming")
+
+    def open_paypal_link(self):
+        """Open PayPal donation page."""
+        import webbrowser
+        webbrowser.open("https://www.paypal.com/donate/?hosted_button_id=ZXHJFTUW9NQK8")
+
+    def open_github_issues(self):
+        """Open GitHub issues page for bug reports and feature requests."""
+        import webbrowser
+        webbrowser.open("https://github.com/codingismynewgaming/folder-zip-versioning/issues")
 
 
 def main():
