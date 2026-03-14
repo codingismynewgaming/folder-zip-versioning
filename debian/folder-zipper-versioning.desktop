@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Folder Zipper Versioning
+Comment=Zip folders with automatic version numbering
+Exec=/usr/bin/folder-zipper-versioning
+Icon=folder-zipper-versioning
+Terminal=false
+Type=Application
+Categories=Utility;Archiving;
+Keywords=zip;compress;archive;backup;version;

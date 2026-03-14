@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --buildsystem=pybuild
+
+override_dh_install:
+	dh_install
+	# Install the main application
+	install -Dm 755 app-files/zipper.py debian/folder-zipper-versioning/usr/bin/folder-zipper-versioning
+	# Install desktop file
+	install -Dm 644 debian/folder-zipper-versioning.desktop debian/folder-zipper-versioning/usr/share/applications/folder-zipper-versioning.desktop
+	# Install icon
+	install -Dm 644 app-files/icon.png debian/folder-zipper-versioning/usr/share/icons/hicolor/256x256/apps/folder-zipper-versioning.png
+
+override_dh_auto_install:
+	# Skip auto install, we handle it manually

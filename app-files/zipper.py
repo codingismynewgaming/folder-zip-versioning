@@ -4,6 +4,7 @@ A simple Tkinter GUI app to zip folders with automatic version numbering.
 """
 
 import os
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import zipfile
@@ -22,7 +23,15 @@ class FolderZipperApp:
         self.selected_folder = None
         # Default to the directory where the app is located
         self.app_dir = os.path.dirname(os.path.abspath(__file__))
-        self.start_directory = self.app_dir  # Start in app directory, not parent
+        
+        # Fix: When running as PyInstaller executable, use the executable's directory
+        if getattr(sys, 'frozen', False):
+            # Running as compiled executable
+            self.start_directory = os.path.dirname(sys.executable)
+        else:
+            # Running as script
+            self.start_directory = self.app_dir
+            
         self.current_directory = None
         self.custom_version = tk.StringVar()
         self.last_version = ""  # Store last entered version

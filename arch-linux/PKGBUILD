@@ -1,0 +1,38 @@
+# Maintainer: Your Name <your.email@example.com>
+pkgname=folder-zipper-versioning
+pkgver=1.0
+pkgrel=1
+pkgdesc="Folder Zipper with automatic versioning - A Tkinter GUI app"
+arch=('any')
+url="https://github.com/yourusername/folder-zipper-versioning"
+license=('MIT')
+depends=('python' 'python-tkinter' 'tk')
+makedepends=('python-setuptools')
+optdepends=('python-pip: for installing additional dependencies')
+source=("folder-zipper-versioning-${pkgver}.tar.gz"
+        "folder-zipper-versioning.desktop"
+        "icon.png")
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+build() {
+  cd "${srcdir}"
+  # No build needed for Python script
+}
+
+package() {
+  # Install the main application
+  install -Dm755 "${srcdir}/app-files/zipper.py" "${pkgdir}/usr/bin/folder-zipper-versioning"
+  
+  # Install desktop file
+  install -Dm644 "${srcdir}/folder-zipper-versioning.desktop" \
+    "${pkgdir}/usr/share/applications/folder-zipper-versioning.desktop"
+  
+  # Install icon
+  install -Dm644 "${srcdir}/icon.png" \
+    "${pkgdir}/usr/share/icons/hicolor/256x256/apps/folder-zipper-versioning.png"
+  
+  # Install license
+  install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
