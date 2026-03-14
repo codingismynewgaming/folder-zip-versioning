@@ -113,15 +113,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create build user
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
       - name: Install dependencies
         run: |
-          pacman -Syu --noconfirm python python-pillow tk base-devel git
+          pacman -Syu --noconfirm python python-pillow tk base-devel git sudo
 
       - name: Build Arch package
         uses: FFY00/build-arch-package@v1
         with:
           PKGBUILD: arch-linux/PKGBUILD
-          OUTDIR: builds
+          OUTDIR: /home/runner/work/folder-zip-versioning/folder-zip-versioning/builds
 
       - name: Upload .pkg.tar.zst to release
         uses: svenstaro/upload-release-action@v2
