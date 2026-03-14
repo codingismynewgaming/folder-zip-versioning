@@ -1,0 +1,19 @@
+#!/bin/bash
+# Debian package maintainer script
+
+case "$1" in
+    install)
+        # Update icon cache
+        if [ -x /usr/bin/gtk-update-icon-cache ]; then
+            gtk-update-icon-cache -qtf /usr/share/icons/hicolor 2>/dev/null || true
+        fi
+        ;;
+    remove)
+        # Clean up
+        rm -f /usr/bin/folder-zipper-versioning.py
+        rm -f /usr/share/icons/hicolor/1024x1024/apps/folder-zipper-versioning.png
+        rm -f /usr/share/applications/folder-zipper-versioning.desktop
+        ;;
+esac
+
+exit 0

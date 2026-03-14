@@ -1,14 +1,10 @@
-Source: folder-zipper-versioning
+Package: folder-zipper-versioning
+Version: 1.0
 Section: utils
 Priority: optional
-Maintainer: codingismynewgaming
-Build-Depends: debhelper (>= 12)
-Standards-Version: 4.5.0
-Homepage: https://github.com/codingismynewgaming/folder-zip-versioning
-
-Package: folder-zipper-versioning
 Architecture: all
 Depends: python3, python3-tk, python3-pil
+Maintainer: codingismynewgaming
 Description: Folder Zipper with automatic versioning
  A Python Tkinter GUI application that zips folders with automatic
  version numbering and custom version support.
@@ -21,3 +17,4 @@ Description: Folder Zipper with automatic versioning
  - Dark mode support
  - Directory navigation
  - Donation links and GitHub issue reporting
+Homepage: https://github.com/codingismynewgaming/folder-zip-versioning

@@ -1,31 +1,23 @@
 # Changelog
 
-## [1.0.2] - 2026-03-14
+## [1.0] - 2026-03-14
 
 ### Added
+- **Professional App Icon** (1024x1024 PNG)
+  - Blue gradient folder with zipper design
+  - Embedded in Windows and Linux executables
+  - Created using Python PIL/Pillow
+
 - **Support & Feedback Section** in UI with:
-  - Buy Me a Coffee donation button (https://buymeacoffee.com/codingiymynewgaming)
-  - PayPal Donate button (https://www.paypal.com/donate/?hosted_button_id=ZXHJFTUW9NQK8)
+  - Buy Me a Coffee donation button
+  - PayPal Donate button
   - GitHub Issues link for bug reports and feature requests
 
-### Technical
-- Added webbrowser module for opening links
-- New methods: open_coffee_link(), open_paypal_link(), open_github_issues()
-
----
-
-## [1.0.1] - 2026-03-14
-
-### Added
-- App icon (512x512 PNG) embedded in executables
-- Linux packaging support:
+- **Linux Packaging Support**:
   - Debian/Ubuntu (.deb) packages
   - Arch Linux (.pkg.tar.zst) packages
   - RPM (Fedora/RHEL) packages
-- Build script enhancements:
-  - `--deb`, `--arch`, `--rpm`, `--all` flags
-  - Automatic icon detection and embedding
-  - Overwrite handling for rebuilds
+  - Build scripts for all platforms
 
 ### Fixed
 - **Startup Directory**: EXE now starts in executable's directory instead of %APPDATA%\Local\Temp
@@ -33,34 +25,12 @@
 - Proper working directory set for compiled executables
 
 ### Changed
-- Updated README.md with Linux installation instructions
-- Enhanced build.py for cross-platform support
-- Improved status documentation
+- Version numbering reset to 1.0 for official release
+- Enhanced build.py with multi-platform support
+- Updated all documentation with Linux instructions
 
 ### Technical
 - Added PIL/Pillow for icon generation
-- Created create_icon.py for automated icon creation
-- Added desktop file integration for Linux GUI apps
-
----
-
-## [1.0.0] - 2026-03-14
-
-### Added
-- Initial release
-- Folder selection GUI with Tkinter
-- Auto version numbering (001, 002, 003...)
-- Custom version input field
-- Timestamp in zip filenames
-- Dark mode support for Windows
-- Directory navigation (up/down)
-- Real-time status feedback
-- Test suite for versioning logic
-
-### Technical
-- Pure Python standard library
-- No external dependencies required
-- PyInstaller build script included
-
-### Known Issues
-- None reported
+- Created professional icon with gradient and zipper design
+- Added webbrowser module for opening links
+- New methods: open_coffee_link(), open_paypal_link(), open_github_issues()
