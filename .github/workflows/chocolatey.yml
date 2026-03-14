@@ -1,0 +1,96 @@
+# Chocolatey GitHub Actions Workflow
+# Automatically builds and publishes releases to Chocolatey Community Repository
+
+name: Chocolatey Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  chocolatey:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Chocolatey Package
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $installerUrl = "${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/FolderZipperVersioning.exe"
+          
+          # Create tools directory
+          New-Item -Path "choco\tools" -ItemType Directory -Force
+          
+          # Create chocolateyInstall.ps1
+          $installScript = @"
+          `$ErrorActionPreference = 'Stop'
+          `$packageName = 'folderzipper-versioning'
+          `$softwareName = 'FolderZipperVersioning'
+          `$installerType = 'EXE'
+          `$silentArgs   = '/VERYSILENT'
+          `$validExitCodes = @(0)
+          
+          `$packageParameters = Get-PackageParameters
+          
+          `$url = '$installerUrl'
+          
+          `$checksum = '$((Invoke-WebRequest -Uri $installerUrl -UseBasicParsing).Headers.'X-Checksum-Sha256' | Select-Object -First 1)'
+          
+          Install-ChocolateyPackage `
+            -PackageName `$packageName `
+            -FileType `$installerType `
+            -SilentArgs `$silentArgs `
+            -ValidExitCodes `$validExitCodes `
+            -Url `$url `
+            -Checksum `$checksum `
+            -ChecksumType 'sha256'
+          "@
+          
+          $installScript | Out-File -FilePath "choco\tools\chocolateyInstall.ps1" -Encoding UTF8
+          
+          # Create nuspec file
+          $nuspec = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+            <metadata>
+              <id>folderzipper-versioning</id>
+              <version>$version</version>
+              <title>FolderZipper Versioning</title>
+              <authors>codingismynewgaming</authors>
+              <owners>codingismynewgaming</owners>
+              <projectUrl>https://github.com/codingismynewgaming/folder-zip-versioning</projectUrl>
+              <iconUrl>https://raw.githubusercontent.com/codingismynewgaming/folder-zip-versioning/main/app-files/app_icon.png</iconUrl>
+              <copyright>MIT License</copyright>
+              <licenseUrl>https://github.com/codingismynewgaming/folder-zip-versioning/blob/main/LICENSE</licenseUrl>
+              <requireLicenseAcceptance>false</requireLicenseAcceptance>
+              <projectSourceUrl>https://github.com/codingismynewgaming/folder-zip-versioning</projectSourceUrl>
+              <packageSourceUrl>https://github.com/codingismynewgaming/folder-zip-versioning/tree/main/choco</packageSourceUrl>
+              <bugTrackerUrl>https://github.com/codingismynewgaming/folder-zip-versioning/issues</bugTrackerUrl>
+              <tags>zip compression backup versioning folder archive utility</tags>
+              <summary>Folder Zipper with automatic versioning</summary>
+              <description>FolderZipperVersioning is a smart backup utility for compressing folders with automatic version control. Features include custom version input, auto-increment versioning, timestamps in filenames, dark mode support, and an intuitive folder browser.</description>
+              <releaseNotes>https://github.com/codingismynewgaming/folder-zip-versioning/releases/tag/${{ github.ref_name }}</releaseNotes>
+            </metadata>
+          </package>
+          "@
+          
+          $nuspec | Out-File -FilePath "choco\folderzipper-versioning.nuspec" -Encoding UTF8
+          
+          Write-Host "Chocolatey package created successfully"
+
+      - name: Pack Chocolatey Package
+        uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          command: pack
+          args: choco\folderzipper-versioning.nuspec
+
+      - name: Push to Chocolatey
+        uses: crazy-max/ghaction-chocolatey@v3
+        env:
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        with:
+          command: push
+          args: choco\folderzipper-versioning.${{ github.ref_name }}.nupkg --source https://push.chocolatey.org/ --api-key=%CHOCOLATEY_API_KEY%

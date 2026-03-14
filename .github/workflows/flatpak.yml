@@ -1,0 +1,37 @@
+# Flathub GitHub Actions Workflow
+# Builds Flatpak package and submits to Flathub
+
+name: Flatpak Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: folderzipper-versioning.flatpak
+          manifest-path: app-files/org.folderzipper.versioning.yml
+          cache-key: flatpak-${{ github.sha }}
+
+      - name: Upload Flatpak Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: folderzipper-versioning-flatpak
+          path: folderzipper-versioning.flatpak
+
+      # Note: Actual Flathub submission requires a PR to flathub/flathub repository
+      # This workflow builds the package for testing
+      # For automated submission, you need Flathub API token after initial approval

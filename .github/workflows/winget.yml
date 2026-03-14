@@ -1,0 +1,46 @@
+# Winget GitHub Actions Workflow
+# Automatically submits new releases to Microsoft Winget package manager
+
+name: WinGet Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  winget:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install wingetcreate
+        run: |
+          iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          Write-Host "wingetcreate installed"
+
+      - name: Create Winget Manifest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $installerUrl = "${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/FolderZipperVersioning.exe"
+          
+          Write-Host "Version: $version"
+          Write-Host "Installer URL: $installerUrl"
+          
+          # Create manifest using wingetcreate
+          .\wingetcreate.exe new `
+            --version $version `
+            --urls "$installerUrl" `
+            --token $env:GITHUB_TOKEN `
+            --submit `
+            --app-id "codingismynewgaming.FolderZipperVersioning" `
+            --publisher "codingismynewgaming" `
+            --publisher-url "https://github.com/codingismynewgaming" `
+            --license "MIT" `
+            --license-url "https://github.com/codingismynewgaming/folder-zip-versioning/blob/main/LICENSE" `
+            --description "Folder Zipper with automatic versioning - Smart backup utility for compressing folders with version control" `
+            --tags "zip,compression,backup,versioning,folder,archive" `
+            --homepage "https://github.com/codingismynewgaming/folder-zip-versioning"

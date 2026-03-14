@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FolderZipper Versioning
+Comment=Folder compression with automatic versioning
+Exec=folderzipper-versioning
+Icon=org.folderzipper.versioning
+Terminal=false
+Type=Application
+Categories=Utility;Compression;FileTools;
+Keywords=zip;compression;backup;versioning;folder;archive;

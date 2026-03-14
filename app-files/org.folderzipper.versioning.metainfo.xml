@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.folderzipper.versioning</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>FolderZipper Versioning</name>
+  <summary>Folder compression with automatic versioning</summary>
+  <description>
+    <p>
+      FolderZipperVersioning is a smart backup utility for compressing folders with automatic version control.
+      It features an intuitive GUI, custom version input, auto-increment versioning, and timestamps in filenames.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Easy folder selection via built-in browser</li>
+      <li>Automatic version numbering (001, 002, 003...)</li>
+      <li>Custom version input field (e.g., 1.0.1)</li>
+      <li>Timestamp in zip filenames</li>
+      <li>Dark mode support for Windows</li>
+      <li>Directory navigation</li>
+      <li>Real-time status feedback</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">org.folderzipper.versioning.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/codingismynewgaming/folder-zip-versioning/main/docs/screenshots/main.png</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/codingismynewgaming/folder-zip-versioning</url>
+  <url type="bugtracker">https://github.com/codingismynewgaming/folder-zip-versioning/issues</url>
+  <url type="donation">https://buymeacoffee.com/codingiymynewgaming</url>
+  <developer_name>codingismynewgaming</developer_name>
+  <update_contact>jan.michael.kuehn.bln@gmail.com</update_contact>
+  <releases>
+    <release version="1.0" date="2026-03-14">
+      <description>
+        <p>Initial release with professional app icon and cross-platform support</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

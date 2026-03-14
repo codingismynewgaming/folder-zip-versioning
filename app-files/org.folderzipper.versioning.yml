@@ -1,0 +1,42 @@
+app-id: org.folderzipper.versioning
+runtime: org.gnome.Platform
+runtime-version: "48"
+sdk: org.gnome.Sdk
+command: folderzipper-versioning
+base: org.freedesktop.Sdk.Base/n-24.08
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=home
+  - --filesystem=xdg-download
+
+modules:
+  - name: folderzipper-versioning
+    buildsystem: simple
+    build-commands:
+      - install -D folderzipper-versioning /app/bin/folderzipper-versioning
+      - install -D folderzipper-versioning.desktop /app/share/applications/org.folderzipper.versioning.desktop
+      - install -D org.folderzipper.versioning.metainfo.xml /app/share/metainfo/org.folderzipper.versioning.metainfo.xml
+      - install -D app_icon.png /app/share/icons/hicolor/1024x1024/apps/org.folderzipper.versioning.png
+    sources:
+      - type: archive
+        url: https://github.com/codingismynewgaming/folder-zip-versioning/archive/refs/tags/v1.0.tar.gz
+        sha256: PLACEHOLDER_UPDATE_ON_RELEASE
+        dest: folderzipper-versioning-src
+      - type: file
+        path: folderzipper-versioning
+      - type: file
+        path: org.folderzipper.versioning.desktop
+      - type: file
+        path: org.folderzipper.versioning.metainfo.xml
+      - type: file
+        path: app_icon.png
+
+  - name: python3-pillow
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/source/P/Pillow/Pillow-11.0.0.tar.gz
+        sha256: PLACEHOLDER_UPDATE
