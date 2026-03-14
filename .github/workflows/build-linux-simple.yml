@@ -1,0 +1,43 @@
+name: Build Linux Packages
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build .deb package
+        run: |
+          # Create package structure
+          mkdir -p pkg/usr/bin pkg/usr/share/applications pkg/usr/share/icons/hicolor/1024x1024/apps pkg/DEBIAN
+          
+          # Copy files
+          cp app-files/zipper.py pkg/usr/bin/folderzipper-versioning
+          chmod +x pkg/usr/bin/folderzipper-versioning
+          cp debian/usr/share/applications/folder-zipper-versioning.desktop pkg/usr/share/applications/
+          cp app-files/app_icon.png pkg/usr/share/icons/hicolor/1024x1024/apps/folderzipper-versioning.png
+          
+          # Create control
+          cat > pkg/DEBIAN/control << 'EOF'
+          Package: folder-zipper-versioning
+          Version: 1.0
+          Architecture: all
+          Depends: python3, python3-tk, python3-pil
+          Maintainer: codingismynewgaming
+          Description: Folder Zipper with versioning
+          EOF
+          
+          # Build
+          dpkg-deb --build pkg folderzipper-versioning_1.0_all.deb
+
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: folderzipper-versioning_1.0_all.deb
+          tag: ${{ github.ref }}
+          overwrite: true
