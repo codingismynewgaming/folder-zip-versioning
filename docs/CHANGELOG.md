@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.2] - 2026-03-14
+
+### Added
+- **Support & Feedback Section** in UI with:
+  - Buy Me a Coffee donation button (https://buymeacoffee.com/codingiymynewgaming)
+  - PayPal Donate button (https://www.paypal.com/donate/?hosted_button_id=ZXHJFTUW9NQK8)
+  - GitHub Issues link for bug reports and feature requests
+
+### Technical
+- Added webbrowser module for opening links
+- New methods: open_coffee_link(), open_paypal_link(), open_github_issues()
+
+---
+
 ## [1.0.1] - 2026-03-14
 
 ### Added
