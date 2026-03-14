@@ -51,12 +51,12 @@ jobs:
           Homepage: https://github.com/codingismynewgaming/folder-zip-versioning
           EOF
 
-          # Create postinst script
+          # Create postinst script with correct permissions
           cat > debian-pkg/DEBIAN/postinst << 'EOF'
           #!/bin/bash
           update-desktop-database || true
           EOF
-          chmod +x debian-pkg/DEBIAN/postinst
+          chmod 755 debian-pkg/DEBIAN/postinst
 
       - name: Build Debian package
         run: |
@@ -83,6 +83,8 @@ jobs:
       - name: Set up RPM build environment
         run: |
           mkdir -p rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          # Copy spec file to correct location
+          cp rpm/folder-zipper-versioning.spec rpmbuild/SPECS/
 
       - name: Create source tarball
         run: |
@@ -95,9 +97,14 @@ jobs:
             --exclude=".github" \
             app-files debian arch-linux rpm build-linux.sh LICENSE README.md
 
+      - name: Copy additional sources
+        run: |
+          cp rpm/icon.png rpmbuild/SOURCES/
+          cp rpm/folder-zipper-versioning.desktop rpmbuild/SOURCES/
+
       - name: Build RPM package
         run: |
-          rpmbuild -bb rpm/folder-zipper-versioning.spec --define "_topdir $PWD/rpmbuild"
+          rpmbuild -bb rpmbuild/SPECS/folder-zipper-versioning.spec
           mkdir -p builds
           find rpmbuild/RPMS -name "*.rpm" -exec mv {} builds/ \;
 
@@ -117,7 +124,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -Syu --noconfirm python python-pillow python-tkinter base-devel git
+          pacman -Syu --noconfirm python python-pillow tk base-devel git
 
       - name: Build Arch package
         run: |
