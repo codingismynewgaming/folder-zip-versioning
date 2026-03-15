@@ -11,27 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Debian package structure
+      - name: Build Debian package
         run: |
-          # Create package directories
           mkdir -p debian-pkg/usr/bin
           mkdir -p debian-pkg/usr/share/applications
           mkdir -p debian-pkg/usr/share/icons/hicolor/1024x1024/apps
           mkdir -p debian-pkg/DEBIAN
 
-          # Copy application files
           cp app-files/zipper.py debian-pkg/usr/bin/folder-zipper-versioning.py
           cp app-files/app_icon.png debian-pkg/usr/share/icons/hicolor/1024x1024/apps/folder-zipper-versioning.png
           cp debian/usr/share/applications/folder-zipper-versioning.desktop debian-pkg/usr/share/applications/
 
-          # Create launcher script
           cat > debian-pkg/usr/bin/folder-zipper-versioning << 'EOF'
           #!/bin/bash
           python3 /usr/bin/folder-zipper-versioning.py "$@"
           EOF
           chmod +x debian-pkg/usr/bin/folder-zipper-versioning
 
-          # Create control file
           cat > debian-pkg/DEBIAN/control << 'EOF'
           Package: folder-zipper-versioning
           Version: 1.0
@@ -46,19 +42,14 @@ jobs:
           Homepage: https://github.com/codingismynewgaming/folder-zip-versioning
           EOF
 
-          # Create postinst script with correct permissions
           cat > debian-pkg/DEBIAN/postinst << 'EOF'
           #!/bin/bash
           update-desktop-database || true
           EOF
           chmod 755 debian-pkg/DEBIAN/postinst
 
-      - name: Build Debian package
-        uses: jtdor/build-deb-action@v1
-        with:
-          source-dir: debian-pkg
-          buildpackage-opts: --build=binary --no-sign
-          artifacts-dir: builds
+          mkdir -p builds
+          dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.0_all.deb
 
       - name: Upload .deb to release
         uses: svenstaro/upload-release-action@v2
@@ -73,49 +64,63 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up RPM build environment
+      - name: Build RPM package
         run: |
-          mkdir -p rpm-build/{SOURCES,SPECS}
-          cp rpm/folder-zipper-versioning.spec rpm-build/SPECS/
-          cp rpm/icon.png rpm-build/SOURCES/
-          cp rpm/folder-zipper-versioning.desktop rpm-build/SOURCES/
+          sudo apt-get update && sudo apt-get install -y rpm
+          mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
           
-          # Create source tarball with prefix directory
+          # Prepare source files
           mkdir -p folder-zipper-versioning-1.0
           cp -r app-files LICENSE README.md folder-zipper-versioning-1.0/
-          tar -czf rpm-build/SOURCES/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
+          tar -czf ~/rpmbuild/SOURCES/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
+          
+          cp rpm/folder-zipper-versioning.desktop ~/rpmbuild/SOURCES/
+          cp rpm/icon.png ~/rpmbuild/SOURCES/
+          cp rpm/folder-zipper-versioning.spec ~/rpmbuild/SPECS/
 
-      - name: Build RPM package
-        uses: naveenrajm7/rpmbuild@master
-        id: rpm_build
-        with:
-          spec_file: "rpm-build/SPECS/folder-zipper-versioning.spec"
+          rpmbuild -ba ~/rpmbuild/SPECS/folder-zipper-versioning.spec
+          
+          mkdir -p builds
+          cp ~/rpmbuild/RPMS/noarch/*.rpm builds/
 
       - name: Upload .rpm to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.rpm_build.outputs.rpm_dir_path }}/*.rpm
+          file: builds/*.rpm
           tag: ${{ github.ref }}
           overwrite: true
 
   build-arch:
     runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
     steps:
+      - name: Install build tools
+        run: |
+          pacman -Syu --noconfirm base-devel git sudo
+
       - uses: actions/checkout@v4
 
-      - name: Prepare Arch source files
+      - name: Build Arch package
         run: |
+          # Create non-root user for makepkg
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+          chown -R builder .
+          
+          # Prepare sources
           cp app-files/app_icon.png arch-linux/icon.png
           mkdir -p folder-zipper-versioning-1.0
           cp -r app-files LICENSE README.md folder-zipper-versioning-1.0/
           tar -czf arch-linux/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
-
-      - name: Build Arch package
-        uses: FFY00/build-arch-package@v1
-        with:
-          PKGBUILD: arch-linux/PKGBUILD
-          OUTDIR: builds
+          
+          cd arch-linux
+          sudo -u builder makepkg --noconfirm -s
+          
+          cd ..
+          mkdir -p builds
+          cp arch-linux/*.pkg.tar.zst builds/
 
       - name: Upload .pkg.tar.zst to release
         uses: svenstaro/upload-release-action@v2
