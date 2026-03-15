@@ -6,7 +6,7 @@ pkgdesc="Folder Zipper with automatic versioning - A Tkinter GUI app"
 arch=('any')
 url="https://github.com/yourusername/folder-zipper-versioning"
 license=('MIT')
-depends=('python' 'python-tkinter' 'tk')
+depends=('python' 'tk')
 makedepends=('python-setuptools')
 source=("folder-zipper-versioning-${pkgver}.tar.gz"
         "folder-zipper-versioning.desktop"

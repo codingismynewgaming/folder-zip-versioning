@@ -51,7 +51,14 @@ jobs:
           mkdir -p builds
           dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.0_all.deb
 
+      - name: Upload .deb Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-zipper-versioning-deb
+          path: builds/*.deb
+
       - name: Upload .deb to release
+        if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -61,12 +68,16 @@ jobs:
 
   build-rpm:
     runs-on: ubuntu-latest
+    container:
+      image: fedora:latest
     steps:
+      - name: Install build tools
+        run: dnf install -y rpm-build python3-devel python3-setuptools
+        
       - uses: actions/checkout@v4
 
       - name: Build RPM package
         run: |
-          sudo apt-get update && sudo apt-get install -y rpm
           mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
           
           # Prepare source files
@@ -83,7 +94,14 @@ jobs:
           mkdir -p builds
           cp ~/rpmbuild/RPMS/noarch/*.rpm builds/
 
+      - name: Upload .rpm Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-zipper-versioning-rpm
+          path: builds/*.rpm
+
       - name: Upload .rpm to release
+        if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -122,7 +140,14 @@ jobs:
           mkdir -p builds
           cp arch-linux/*.pkg.tar.zst builds/
 
+      - name: Upload .pkg.tar.zst Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-zipper-versioning-arch
+          path: builds/*.pkg.tar.zst
+
       - name: Upload .pkg.tar.zst to release
+        if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
