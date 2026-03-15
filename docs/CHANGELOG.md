@@ -6,7 +6,6 @@
 - **Professional App Icon** (1024x1024 PNG)
   - Blue gradient folder with zipper design
   - Embedded in Windows and Linux executables
-  - Created using Python PIL/Pillow
 
 - **Support & Feedback Section** in UI with:
   - Buy Me a Coffee donation button
@@ -30,7 +29,5 @@
 - Updated all documentation with Linux instructions
 
 ### Technical
-- Added PIL/Pillow for icon generation
-- Created professional icon with gradient and zipper design
 - Added webbrowser module for opening links
 - New methods: open_coffee_link(), open_paypal_link(), open_github_issues()

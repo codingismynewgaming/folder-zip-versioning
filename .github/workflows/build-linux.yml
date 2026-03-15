@@ -20,16 +20,16 @@ jobs:
           mkdir -p debian-pkg/DEBIAN
 
           # Copy application files
-          cp app-files/zipper.py debian-pkg/usr/bin/folderzipper-versioning.py
-          cp app-files/app_icon.png debian-pkg/usr/share/icons/hicolor/1024x1024/apps/folderzipper-versioning.png
+          cp app-files/zipper.py debian-pkg/usr/bin/folder-zipper-versioning.py
+          cp app-files/app_icon.png debian-pkg/usr/share/icons/hicolor/1024x1024/apps/folder-zipper-versioning.png
           cp debian/usr/share/applications/folder-zipper-versioning.desktop debian-pkg/usr/share/applications/
 
           # Create launcher script
-          cat > debian-pkg/usr/bin/folderzipper-versioning << 'EOF'
+          cat > debian-pkg/usr/bin/folder-zipper-versioning << 'EOF'
           #!/bin/bash
-          python3 /usr/bin/folderzipper-versioning.py "$@"
+          python3 /usr/bin/folder-zipper-versioning.py "$@"
           EOF
-          chmod +x debian-pkg/usr/bin/folderzipper-versioning
+          chmod +x debian-pkg/usr/bin/folder-zipper-versioning
 
           # Create control file
           cat > debian-pkg/DEBIAN/control << 'EOF'
@@ -38,7 +38,7 @@ jobs:
           Section: utils
           Priority: optional
           Architecture: all
-          Depends: python3, python3-tk, python3-pil
+          Depends: python3, python3-tk
           Maintainer: codingismynewgaming
           Description: Folder Zipper with automatic versioning
            A Python Tkinter GUI application that zips folders with automatic
@@ -80,16 +80,10 @@ jobs:
           cp rpm/icon.png rpm-build/SOURCES/
           cp rpm/folder-zipper-versioning.desktop rpm-build/SOURCES/
           
-          # Create source tarball
-          tar -czf rpm-build/SOURCES/folder-zipper-versioning-1.0.tar.gz \
-            --exclude=".git" \
-            --exclude="builds" \
-            --exclude="internals" \
-            --exclude="__pycache__" \
-            --exclude="*.pyc" \
-            --exclude=".github" \
-            --exclude="debian-pkg" \
-            app-files debian arch-linux rpm build-linux.sh LICENSE README.md
+          # Create source tarball with prefix directory
+          mkdir -p folder-zipper-versioning-1.0
+          cp -r app-files LICENSE README.md folder-zipper-versioning-1.0/
+          tar -czf rpm-build/SOURCES/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
 
       - name: Build RPM package
         uses: naveenrajm7/rpmbuild@master
@@ -107,26 +101,21 @@ jobs:
 
   build-arch:
     runs-on: ubuntu-latest
-    container:
-      image: archlinux
-      options: --privileged
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create build user
+      - name: Prepare Arch source files
         run: |
-          useradd -m builder
-          echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-      - name: Install dependencies
-        run: |
-          pacman -Syu --noconfirm python python-pillow tk base-devel git sudo
+          cp app-files/app_icon.png arch-linux/icon.png
+          mkdir -p folder-zipper-versioning-1.0
+          cp -r app-files LICENSE README.md folder-zipper-versioning-1.0/
+          tar -czf arch-linux/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
 
       - name: Build Arch package
         uses: FFY00/build-arch-package@v1
         with:
           PKGBUILD: arch-linux/PKGBUILD
-          OUTDIR: /home/runner/work/folder-zip-versioning/folder-zip-versioning/builds
+          OUTDIR: builds
 
       - name: Upload .pkg.tar.zst to release
         uses: svenstaro/upload-release-action@v2

@@ -8,7 +8,6 @@ url="https://github.com/yourusername/folder-zipper-versioning"
 license=('MIT')
 depends=('python' 'python-tkinter' 'tk')
 makedepends=('python-setuptools')
-optdepends=('python-pip: for installing additional dependencies')
 source=("folder-zipper-versioning-${pkgver}.tar.gz"
         "folder-zipper-versioning.desktop"
         "icon.png")
@@ -23,7 +22,7 @@ build() {
 
 package() {
   # Install the main application
-  install -Dm755 "${srcdir}/app-files/zipper.py" "${pkgdir}/usr/bin/folder-zipper-versioning"
+  install -Dm755 "${srcdir}/folder-zipper-versioning-1.0/app-files/zipper.py" "${pkgdir}/usr/bin/folder-zipper-versioning"
   
   # Install desktop file
   install -Dm644 "${srcdir}/folder-zipper-versioning.desktop" \
@@ -34,5 +33,5 @@ package() {
     "${pkgdir}/usr/share/icons/hicolor/256x256/apps/folder-zipper-versioning.png"
   
   # Install license
-  install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 "${srcdir}/folder-zipper-versioning-1.0/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }

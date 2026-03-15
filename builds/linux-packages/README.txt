@@ -6,15 +6,15 @@ FolderZipperVersioning.
 == Quick Build ==
 
 Debian/Ubuntu:
-  sudo apt-get install python3-pil python3-tk dpkg-dev
+  sudo apt-get install python3-tk dpkg-dev
   ./build-linux.sh --deb
 
 Arch Linux:
-  sudo pacman -S python-pillow python-tkinter base-devel
+  sudo pacman -S python-tkinter base-devel
   cd arch-linux && makepkg -si
 
 Fedora/RHEL:
-  sudo dnf install rpm python3-pillow python3-tkinter rpm-build
+  sudo dnf install rpm python3-tkinter rpm-build
   ./build-linux.sh --rpm
 
 == Manual Build ==
@@ -49,7 +49,6 @@ Fedora/RHEL:
 
 - Python 3.8+
 - Tkinter (python3-tk)
-- Pillow (python3-pil)
 
 == License ==
 

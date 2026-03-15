@@ -34,9 +34,3 @@ modules:
         path: org.folderzipper.versioning.metainfo.xml
       - type: file
         path: app_icon.png
-
-  - name: python3-pillow
-    sources:
-      - type: archive
-        url: https://files.pythonhosted.org/packages/source/P/Pillow/Pillow-11.0.0.tar.gz
-        sha256: PLACEHOLDER_UPDATE
