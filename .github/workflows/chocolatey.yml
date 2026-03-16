@@ -82,15 +82,11 @@ jobs:
           Write-Host "Chocolatey package created successfully"
 
       - name: Pack Chocolatey Package
-        uses: crazy-max/ghaction-chocolatey@v3
-        with:
-          command: pack
-          args: choco\folderzipper-versioning.nuspec
+        run: choco pack choco\folderzipper-versioning.nuspec --out choco
 
       - name: Push to Chocolatey
         uses: crazy-max/ghaction-chocolatey@v3
         env:
           CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
         with:
-          command: push
-          args: choco\folderzipper-versioning.${{ github.ref_name }}.nupkg --source https://push.chocolatey.org/ --api-key=%CHOCOLATEY_API_KEY%
+          args: push choco\folderzipper-versioning.${{ github.ref_name }}.nupkg --source https://push.chocolatey.org/ --api-key=%CHOCOLATEY_API_KEY%

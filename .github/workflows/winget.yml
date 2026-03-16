@@ -20,23 +20,22 @@ jobs:
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
           Write-Host "wingetcreate installed"
 
-      - name: Create Winget Manifest
+      - name: Create and Submit Winget Manifest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $version = "${{ github.ref_name }}".TrimStart('v')
           $installerUrl = "${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/FolderZipperVersioning.exe"
-          
+
           Write-Host "Version: $version"
           Write-Host "Installer URL: $installerUrl"
-          
-          # Create manifest using wingetcreate
-          .\wingetcreate.exe new `
-            --version $version `
-            --urls "$installerUrl" `
-            --token $env:GITHUB_TOKEN `
-            --submit `
-            --app-id "codingismynewgaming.FolderZipperVersioning" `
+
+          # Create manifest and submit using wingetcreate
+          .\wingetcreate.exe new $installerUrl `
+            -v $version `
+            -t $env:GITHUB_TOKEN `
+            -s `
+            --appid "codingismynewgaming.FolderZipperVersioning" `
             --publisher "codingismynewgaming" `
             --publisher-url "https://github.com/codingismynewgaming" `
             --license "MIT" `
