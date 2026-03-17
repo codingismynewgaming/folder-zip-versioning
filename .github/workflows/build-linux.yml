@@ -30,7 +30,7 @@ jobs:
 
           cat > debian-pkg/DEBIAN/control << 'EOF'
           Package: folder-zipper-versioning
-          Version: 1.0
+          Version: 1.1
           Section: utils
           Priority: optional
           Architecture: all
@@ -49,7 +49,7 @@ jobs:
           chmod 755 debian-pkg/DEBIAN/postinst
 
           mkdir -p builds
-          dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.0_all.deb
+          dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.1_all.deb
 
       - name: Upload .deb Artifact
         uses: actions/upload-artifact@v4
@@ -81,9 +81,9 @@ jobs:
           mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
           
           # Prepare source files
-          mkdir -p folder-zipper-versioning-1.0
-          cp -r app-files LICENSE README.md folder-zipper-versioning-1.0/
-          tar -czf ~/rpmbuild/SOURCES/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
+          mkdir -p folder-zipper-versioning-1.1
+          cp -r app-files LICENSE README.md folder-zipper-versioning-1.1/
+          tar -czf ~/rpmbuild/SOURCES/folder-zipper-versioning-1.1.tar.gz folder-zipper-versioning-1.1
           
           cp rpm/folder-zipper-versioning.desktop ~/rpmbuild/SOURCES/
           cp rpm/icon.png ~/rpmbuild/SOURCES/
@@ -129,9 +129,9 @@ jobs:
           
           # Prepare sources
           cp app-files/app_icon.png arch-linux/icon.png
-          mkdir -p folder-zipper-versioning-1.0
-          cp -r app-files LICENSE README.md folder-zipper-versioning-1.0/
-          tar -czf arch-linux/folder-zipper-versioning-1.0.tar.gz folder-zipper-versioning-1.0
+          mkdir -p folder-zipper-versioning-1.1
+          cp -r app-files LICENSE README.md folder-zipper-versioning-1.1/
+          tar -czf arch-linux/folder-zipper-versioning-1.1.tar.gz folder-zipper-versioning-1.1
           
           cd arch-linux
           sudo -u builder makepkg --noconfirm -s

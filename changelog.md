@@ -1,19 +1,14 @@
 # Changelog
 
-## [1.0.1] - 2026-03-15
-### Fixed
-- GitHub Actions workflows for Linux packages (Debian, Arch, RPM).
-- Missing RPM spec file in repository.
-- Arch Linux source file preparation.
-- Unnecessary Pillow/PIL dependencies removed from all Linux packages.
-- Standardized application and file naming across all Linux distributions.
-- Standardized icons for all builds.
-
-## [1.0.0] - 2026-03-14
+## [1.1.0] - 2026-03-17
 ### Added
-- Initial release of Folder Zipper with Versioning.
-- Auto-incrementing version numbering.
-- Custom version support.
-- GUI for easy folder selection.
-- Dark mode support.
-- Support for Debian, Arch, and RPM builds.
+- **Green Progress Bar**: Progress bar now has a stylish green color. 🟢
+- **Larger Default Viewport**: Increased window size to 700x600 to prevent bottom-cut issues. 📐
+- **Version Display**: Version number clearly displayed in the app title.
+
+### Fixed
+- Fixed "attribute error" for human-readable size conversion.
+- Optimized UI layout for better spacing with the new progress bar.
+
+---
+*Bumping version to 1.1 with UI refinements and green theme.*

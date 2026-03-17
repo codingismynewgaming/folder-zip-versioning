@@ -11,19 +11,22 @@ import zipfile
 import re
 from pathlib import Path
 from datetime import datetime
+import json
+import threading
 
 
 class FolderZipperApp:
     def __init__(self, root):
+        self.version = "1.1"
         self.root = root
-        self.root.title("Folder Zipper with Versioning")
-        self.root.geometry("700x500")
+        self.root.title(f"Folder Zipper with Versioning v{self.version}")
+        self.root.geometry("700x600")
         self.root.resizable(True, True)
-        
+
         self.selected_folder = None
         # Default to the directory where the app is located
         self.app_dir = os.path.dirname(os.path.abspath(__file__))
-        
+
         # Fix: When running as PyInstaller executable, use the executable's directory
         if getattr(sys, 'frozen', False):
             # Running as compiled executable
@@ -31,63 +34,36 @@ class FolderZipperApp:
         else:
             # Running as script
             self.start_directory = self.app_dir
-            
+
         self.current_directory = None
-        self.custom_version = tk.StringVar()
-        self.last_version = ""  # Store last entered version
+        # Config file is saved next to the executable, not in bundled app-files
+        if getattr(sys, 'frozen', False):
+            self.config_file = os.path.join(os.path.dirname(sys.executable), "folderzipperconfig.json")
+        else:
+            self.config_file = os.path.join(self.app_dir, "folderzipperconfig.json")
 
         self.setup_ui()
+        self.load_config()
         self.apply_system_theme()
-        
+
     def setup_ui(self):
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
+
         # Configure grid weights for resizing
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(1, weight=1)
-        
+
         # Title
         title_label = ttk.Label(
             main_frame,
-            text="Select a Folder to Zip",
+            text=f"Folder Zipper v{self.version}",
             font=('Segoe UI', 16, 'bold')
         )
         title_label.grid(row=0, column=0, pady=(0, 10))
-
-        # Version input field
-        version_frame = ttk.Frame(main_frame)
-        version_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
-        version_frame.columnconfigure(1, weight=1)
-
-        version_label = ttk.Label(
-            version_frame,
-            text="Version (optional):",
-            font=('Segoe UI', 10)
-        )
-        version_label.grid(row=0, column=0, padx=(0, 5))
-
-        self.version_entry = ttk.Entry(
-            version_frame,
-            textvariable=self.custom_version,
-            font=('Segoe UI', 10),
-            width=20
-        )
-        self.version_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
-        # Restore last version if available
-        if self.last_version:
-            self.version_entry.insert(0, self.last_version)
-
-        version_hint = ttk.Label(
-            version_frame,
-            text="Leave empty for auto-increment",
-            font=('Segoe UI', 8),
-            foreground='gray'
-        )
-        version_hint.grid(row=0, column=2, padx=(5, 0))
 
         # Directory navigation frame
         nav_frame = ttk.Frame(main_frame)
@@ -149,14 +125,73 @@ class FolderZipperApp:
         self.folder_listbox.bind('<Double-Button-1>', self.on_folder_enter_and_zip)
         self.folder_listbox.bind('<Return>', self.on_folder_enter_and_zip)
         
+        # Zip button with version input
+        zip_frame = ttk.Frame(main_frame)
+        zip_frame.grid(row=4, column=0, pady=(10, 10))
+        zip_frame.columnconfigure(1, weight=1)
+
+        # Version label
+        version_label = ttk.Label(
+            zip_frame,
+            text="Version:",
+            font=('Segoe UI', 10, 'bold')
+        )
+        version_label.grid(row=0, column=0, padx=(0, 5))
+
+        # Version entry
+        self.version_entry = ttk.Entry(
+            zip_frame,
+            font=('Segoe UI', 10),
+            width=48
+        )
+        self.version_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
+        
+        # Bind window close event to save config
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
         # Zip button
         self.zip_btn = ttk.Button(
-            main_frame,
+            zip_frame,
             text="📦 Zip Selected Folder",
             command=self.zip_selected_folder,
-            width=30
+            width=25
         )
-        self.zip_btn.grid(row=4, column=0, pady=(10, 10))
+        self.zip_btn.grid(row=0, column=2, padx=(20, 0))
+
+        # Progress bar
+        self.progress_var = tk.DoubleVar()
+        
+        # Create a style for the green progress bar
+        self.style = ttk.Style()
+        # Ensure we're using a theme that supports custom colors (clam is good)
+        if self.style.theme_use() not in ['clam', 'alt', 'default']:
+            self.style.theme_use('clam')
+            
+        self.style.configure(
+            "Green.Horizontal.TProgressbar", 
+            troughcolor='#2d2d2d', 
+            background='#28a745', 
+            bordercolor='#2d2d2d', 
+            lightcolor='#28a745', 
+            darkcolor='#28a745'
+        )
+
+        self.progress_bar = ttk.Progressbar(
+            main_frame,
+            variable=self.progress_var,
+            maximum=100,
+            style="Green.Horizontal.TProgressbar"
+        )
+        self.progress_bar.grid(row=5, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
+
+        # Current file being zipped label
+        self.current_file_label = ttk.Label(
+            main_frame,
+            text="",
+            font=('Segoe UI', 8),
+            foreground='gray'
+        )
+        self.current_file_label.grid(row=6, column=0, sticky=(tk.W, tk.E))
 
         # Status label with wrap
         self.status_label = ttk.Label(
@@ -166,11 +201,11 @@ class FolderZipperApp:
             foreground='gray',
             wraplength=600
         )
-        self.status_label.grid(row=5, column=0, pady=(0, 10))
+        self.status_label.grid(row=7, column=0, pady=(5, 10))
 
         # Support & Feedback section
         support_frame = ttk.Frame(main_frame)
-        support_frame.grid(row=6, column=0, pady=(10, 10))
+        support_frame.grid(row=8, column=0, pady=(10, 10))
 
         # Support label
         support_label = ttk.Label(
@@ -292,7 +327,7 @@ class FolderZipperApp:
         
         # Configure status label
         self.status_label.configure(background=frame_bg)
-        
+
         # Try to set window title bar color (Windows 10/11 only)
         try:
             import winreg
@@ -387,13 +422,11 @@ class FolderZipperApp:
         parent_dir = os.path.dirname(folder_path)
         folder_name = os.path.basename(folder_path)
 
-        # If custom version is provided, save it and use it directly
+        # If custom version is provided, use it directly
         if custom_version and custom_version.strip():
-            self.last_version = custom_version.strip()
-            return self.last_version
+            return custom_version.strip()
 
         # Pattern to match foldername_XXX_timestamp.zip (where XXX is 1-3 digits)
-        # Also match custom version format: version-foldername_timestamp.zip
         pattern = re.compile(rf'^{re.escape(folder_name)}_(\d{{1,3}})_.*\.zip$', re.IGNORECASE)
 
         existing_versions = []
@@ -411,15 +444,55 @@ class FolderZipperApp:
         else:
             return 1
     
-    def zip_folder(self, folder_path, version_num):
-        """Create a zip file of the folder with version number and timestamp."""
-        parent_dir = os.path.dirname(folder_path)
-        folder_name = os.path.basename(folder_path)
+    def get_human_readable_size(self, size_bytes):
+        """Convert bytes to human-readable format."""
+        if size_bytes == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB")
+        import math
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return f"{s} {size_name[i]}"
 
-        # Add timestamp to filename: foldername_001_2026-03-14_16-30.zip or 1.0.1-foldername_2026-03-14_16-30.zip
+    def zip_selected_folder(self):
+        """Zip the currently selected folder with auto-versioning (threaded)."""
+        folder_path = self.get_selected_folder()
+
+        if not folder_path:
+            self.status_label.config(text="⚠ No folder selected", foreground='orange')
+            return
+
+        if not os.path.exists(folder_path):
+            self.status_label.config(text=f"⚠ Folder not found", foreground='red')
+            return
+
+        parent_dir = os.path.dirname(folder_path)
+        if not os.access(parent_dir, os.W_OK):
+            self.status_label.config(text="⚠ Parent directory is read-only", foreground='red')
+            return
+
+        # Disable button during zipping
+        self.zip_btn.config(state=tk.DISABLED)
+        self.progress_var.set(0)
+        
+        # Get version info
+        custom_version = self.version_entry.get().strip()
+        version_num = self.get_next_version_number(folder_path, custom_version)
+        
+        # Start zipping in a background thread
+        thread = threading.Thread(
+            target=self.run_zipping_thread, 
+            args=(folder_path, version_num, parent_dir)
+        )
+        thread.daemon = True
+        thread.start()
+
+    def run_zipping_thread(self, folder_path, version_num, parent_dir):
+        """Perform the actual zipping in a background thread."""
+        folder_name = os.path.basename(folder_path)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
         
-        # Check if version is a custom string (not auto-increment number)
         if isinstance(version_num, str):
             zip_filename = f"{version_num}-{folder_name}_{timestamp}.zip"
         else:
@@ -427,58 +500,50 @@ class FolderZipperApp:
         
         zip_path = os.path.join(parent_dir, zip_filename)
 
-        # Create the zip file
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(folder_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    # Calculate relative path for the archive
-                    arcname = os.path.relpath(file_path, parent_dir)
-                    zipf.write(file_path, arcname)
-
-        return zip_path
-    
-    def zip_selected_folder(self):
-        """Zip the currently selected folder with auto-versioning."""
-        folder_path = self.get_selected_folder()
-
-        if not folder_path:
-            self.status_label.config(text="⚠ No folder selected", foreground='orange')
-            return
-
-        # Check if folder exists
-        if not os.path.exists(folder_path):
-            self.status_label.config(text=f"⚠ Folder not found", foreground='red')
-            return
-
-        # Check if parent directory is writable
-        parent_dir = os.path.dirname(folder_path)
-        if not os.access(parent_dir, os.W_OK):
-            self.status_label.config(text="⚠ Parent directory is read-only", foreground='red')
-            return
-
         try:
-            # Get custom version from input field
-            custom_version = self.custom_version.get().strip()
+            # Step 1: Count total files for progress bar
+            self.root.after(0, lambda: self.status_label.config(text="Calculating files...", foreground='gray'))
+            total_files = 0
+            for root, dirs, files in os.walk(folder_path):
+                total_files += len(files)
             
-            # Get next version number (uses custom version if provided)
-            version_num = self.get_next_version_number(folder_path, custom_version)
+            if total_files == 0:
+                self.root.after(0, lambda: self.status_label.config(text="⚠ Folder is empty", foreground='orange'))
+                self.root.after(0, lambda: self.zip_btn.config(state=tk.NORMAL))
+                return
 
-            # Create zip
-            zip_path = self.zip_folder(folder_path, version_num)
+            # Step 2: Create the zip file
+            zipped_count = 0
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, dirs, files in os.walk(folder_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, parent_dir)
+                        
+                        # Update UI
+                        self.root.after(0, lambda f=file: self.current_file_label.config(text=f"Zipping: {f}"))
+                        
+                        zipf.write(file_path, arcname)
+                        
+                        zipped_count += 1
+                        progress = (zipped_count / total_files) * 100
+                        self.root.after(0, lambda p=progress: self.progress_var.set(p))
 
-            # Success - show detailed info in status
-            zip_name = os.path.basename(zip_path)
-            self.status_label.config(
-                text=f"✓ {zip_name} | Saved to: {parent_dir}",
+            # Step 3: Success! Get final size
+            final_size = os.path.getsize(zip_path)
+            human_size = self.get_human_readable_size(final_size)
+            
+            self.root.after(0, lambda: self.status_label.config(
+                text=f"✓ {zip_filename} | Size: {human_size}",
                 foreground='green'
-            )
-            # Note: Keep version in field for reuse (don't clear it)
+            ))
+            self.root.after(0, lambda: self.current_file_label.config(text="Done!"))
 
-        except PermissionError:
-            self.status_label.config(text="⚠ Permission denied", foreground='red')
         except Exception as e:
-            self.status_label.config(text=f"⚠ Error: {str(e)}", foreground='red')
+            self.root.after(0, lambda msg=str(e): self.status_label.config(text=f"⚠ Error: {msg}", foreground='red'))
+        finally:
+            self.root.after(0, lambda: self.zip_btn.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.progress_var.set(100))
 
     def open_coffee_link(self):
         """Open Buy Me a Coffee donation page."""
@@ -494,6 +559,34 @@ class FolderZipperApp:
         """Open GitHub issues page for bug reports and feature requests."""
         import webbrowser
         webbrowser.open("https://github.com/codingismynewgaming/folder-zip-versioning/issues")
+
+    def load_config(self):
+        """Load saved configuration from config file."""
+        try:
+            if os.path.exists(self.config_file):
+                with open(self.config_file, 'r') as f:
+                    config = json.load(f)
+                    saved_version = config.get('last_version', '')
+                    if saved_version:
+                        self.version_entry.insert(0, saved_version)
+        except Exception as e:
+            print(f"Could not load config: {e}")
+
+    def save_config(self):
+        """Save current configuration to config file."""
+        try:
+            config = {
+                'last_version': self.version_entry.get().strip()
+            }
+            with open(self.config_file, 'w') as f:
+                json.dump(config, f, indent=2)
+        except Exception as e:
+            print(f"Could not save config: {e}")
+
+    def on_close(self):
+        """Handle app close event - save config before closing."""
+        self.save_config()
+        self.root.destroy()
 
 
 def main():
