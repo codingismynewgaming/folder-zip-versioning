@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0] - 2026-03-20
+### Added
+- **Per-Folder Version Memory**: App now remembers the last version text for each folder path 📁
+- **Auto-Fill Version Field**: Version field automatically populates when a folder is selected ✨
+
+### Fixed
+- **Folder Selection Persistence**: Fixed issue where folder selection was lost when editing the version text field. Both widgets now maintain independent selections. ✅
+
+## [1.1.0] - 2026-03-17
+### Added
+- **Green Progress Bar**: Progress bar now has a stylish green color. 🟢
+- **Larger Default Viewport**: Increased window size to 700x600. 📐
+- **Version Display**: Version number clearly displayed in the app title.
+
 ## [1.0] - 2026-03-14
 
 ### Added

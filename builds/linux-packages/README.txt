@@ -1,4 +1,4 @@
-FolderZipperVersioning Linux Source Distribution v1.0
+FolderZipperVersioning Linux Source Distribution v1.2
 
 This archive contains everything needed to build Linux packages for
 FolderZipperVersioning.
@@ -20,7 +20,7 @@ Fedora/RHEL:
 == Manual Build ==
 
 Debian Package:
-  dpkg-deb --build debian builds/folder-zipper-versioning_1.0_all.deb
+  dpkg-deb --build debian builds/folder-zipper-versioning_1.2_all.deb
 
 Arch Package:
   cd arch-linux
@@ -32,14 +32,14 @@ RPM Package:
 == Installation ==
 
 Debian/Ubuntu:
-  sudo dpkg -i folder-zipper-versioning_1.0_all.deb
+  sudo dpkg -i folder-zipper-versioning_1.2_all.deb
   sudo apt-get install -f  # Fix dependencies if needed
 
 Arch Linux:
-  sudo pacman -U folder-zipper-versioning-1.0-1.pkg.tar.zst
+  sudo pacman -U folder-zipper-versioning-1.2-1.pkg.tar.zst
 
 Fedora/RHEL:
-  sudo dnf install folder-zipper-versioning-1.0.noarch.rpm
+  sudo dnf install folder-zipper-versioning-1.2.noarch.rpm
 
 == Run Without Installing ==
 

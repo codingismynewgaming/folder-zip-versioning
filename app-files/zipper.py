@@ -17,7 +17,7 @@ import threading
 
 class FolderZipperApp:
     def __init__(self, root):
-        self.version = "1.1"
+        self.version = "1.2"
         self.root = root
         self.root.title(f"Folder Zipper with Versioning v{self.version}")
         self.root.geometry("700x600")
@@ -36,6 +36,7 @@ class FolderZipperApp:
             self.start_directory = self.app_dir
 
         self.current_directory = None
+        self.folder_versions = {}  # Initialize before load_config
         # Config file is saved next to the executable, not in bundled app-files
         if getattr(sys, 'frozen', False):
             self.config_file = os.path.join(os.path.dirname(sys.executable), "folderzipperconfig.json")
@@ -112,7 +113,8 @@ class FolderZipperApp:
             list_frame,
             font=('Segoe UI', 11),
             yscrollcommand=self.scrollbar.set,
-            selectmode=tk.SINGLE
+            selectmode=tk.SINGLE,
+            exportselection=tk.FALSE
         )
         self.folder_listbox.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         self.scrollbar.config(command=self.folder_listbox.yview)
@@ -142,7 +144,8 @@ class FolderZipperApp:
         self.version_entry = ttk.Entry(
             zip_frame,
             font=('Segoe UI', 10),
-            width=48
+            width=48,
+            exportselection=tk.FALSE
         )
         self.version_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
         
@@ -255,11 +258,25 @@ class FolderZipperApp:
         self.load_directory(self.start_directory)
         
     def on_folder_select(self, event=None):
-        """Handle single-click on folder - just select it."""
+        """Handle single-click on folder - select and auto-fill version."""
         folder_path = self.get_selected_folder()
         if folder_path:
+            # Store the selected folder path for later use
+            self.selected_folder = folder_path
+            
+            # Get stored version for this folder
+            stored_version = self.get_folder_version(folder_path)
+
+            # Auto-fill version entry
+            self.version_entry.delete(0, tk.END)
+            self.version_entry.insert(0, stored_version)
+
+            # Update status
             folder_name = os.path.basename(folder_path)
-            self.status_label.config(text=f"Selected: {folder_name} (double-click to enter/zip)", foreground='gray')
+            if stored_version:
+                self.status_label.config(text=f"Selected: {folder_name} (version: {stored_version})", foreground='gray')
+            else:
+                self.status_label.config(text=f"Selected: {folder_name} (new folder)", foreground='gray')
         
     def on_folder_enter_and_zip(self, event=None):
         """Handle double-click on folder - enter if it's a folder, or zip if already selected."""
@@ -457,7 +474,12 @@ class FolderZipperApp:
 
     def zip_selected_folder(self):
         """Zip the currently selected folder with auto-versioning (threaded)."""
-        folder_path = self.get_selected_folder()
+        # Use stored folder path instead of re-reading from listbox
+        folder_path = self.selected_folder
+        
+        # Fallback to get_selected_folder() if not set
+        if not folder_path:
+            folder_path = self.get_selected_folder()
 
         if not folder_path:
             self.status_label.config(text="⚠ No folder selected", foreground='orange')
@@ -532,18 +554,28 @@ class FolderZipperApp:
             # Step 3: Success! Get final size
             final_size = os.path.getsize(zip_path)
             human_size = self.get_human_readable_size(final_size)
-            
-            self.root.after(0, lambda: self.status_label.config(
-                text=f"✓ {zip_filename} | Size: {human_size}",
-                foreground='green'
+
+            # Save the version for this folder
+            entered_version = self.version_entry.get().strip()
+            self.save_folder_version(folder_path, entered_version)
+
+            self.root.after(0, lambda: (
+                self.status_label.config(
+                    text=f"✓ {zip_filename} | Size: {human_size}",
+                    foreground='green'
+                ),
+                self.current_file_label.config(text="Done!")
             ))
-            self.root.after(0, lambda: self.current_file_label.config(text="Done!"))
 
         except Exception as e:
             self.root.after(0, lambda msg=str(e): self.status_label.config(text=f"⚠ Error: {msg}", foreground='red'))
         finally:
-            self.root.after(0, lambda: self.zip_btn.config(state=tk.NORMAL))
-            self.root.after(0, lambda: self.progress_var.set(100))
+            # Combine UI updates to prevent race condition
+            self.root.after(0, lambda: (
+                self.zip_btn.config(state=tk.NORMAL),
+                self.progress_var.set(100),
+                self.current_file_label.config(text="Done!")
+            ))
 
     def open_coffee_link(self):
         """Open Buy Me a Coffee donation page."""
@@ -561,25 +593,97 @@ class FolderZipperApp:
         webbrowser.open("https://github.com/codingismynewgaming/folder-zip-versioning/issues")
 
     def load_config(self):
-        """Load saved configuration from config file."""
+        """Load saved configuration from config file with migration support."""
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r') as f:
                     config = json.load(f)
-                    saved_version = config.get('last_version', '')
-                    if saved_version:
-                        self.version_entry.insert(0, saved_version)
+                    
+                    # Migration: Convert old last_version to new folder_versions structure
+                    if 'last_version' in config and 'folder_versions' not in config:
+                        old_version = config.get('last_version', '')
+                        if old_version:
+                            # Migrate to new structure
+                            config['folder_versions'] = {}
+                            # Store the old last_version as a fallback for unknown folders
+                            config['folder_versions']['__default__'] = old_version
+                            # Remove old key
+                            del config['last_version']
+                            # Save migrated config
+                            self.save_config_from_dict(config)
+                    
+                    # Load folder_versions if present
+                    folder_versions = config.get('folder_versions', {})
+                    # Store in instance for later use
+                    self.folder_versions = folder_versions
+                    
+        except json.JSONDecodeError as e:
+            print(f"Config file is malformed: {e}")
+            self.folder_versions = {}
         except Exception as e:
             print(f"Could not load config: {e}")
+            self.folder_versions = {}
+
+    def get_folder_version(self, folder_path: str) -> str:
+        """
+        Get stored version for a specific folder path.
+        
+        Args:
+            folder_path: Absolute path to the folder
+            
+        Returns:
+            Stored version string or empty string if not found
+        """
+        if not hasattr(self, 'folder_versions'):
+            self.folder_versions = {}
+        
+        # Try exact path match first
+        version = self.folder_versions.get(folder_path, '')
+        
+        # If not found, return default version if exists
+        if not version:
+            version = self.folder_versions.get('__default__', '')
+        
+        return version
+
+    def save_folder_version(self, folder_path: str, version: str) -> None:
+        """
+        Save version for a specific folder path.
+        
+        Args:
+            folder_path: Absolute path to the folder
+            version: Version string to save
+        """
+        if not hasattr(self, 'folder_versions'):
+            self.folder_versions = {}
+        
+        # Only save non-empty versions
+        if version and version.strip():
+            self.folder_versions[folder_path] = version.strip()
+        elif folder_path in self.folder_versions:
+            # Remove the entry if version is empty
+            del self.folder_versions[folder_path]
+
+    def save_config_from_dict(self, config: dict) -> None:
+        """
+        Save configuration dictionary to config file.
+        
+        Args:
+            config: Configuration dictionary to save
+        """
+        try:
+            with open(self.config_file, 'w') as f:
+                json.dump(config, f, indent=2)
+        except Exception as e:
+            print(f"Could not save config: {e}")
 
     def save_config(self):
         """Save current configuration to config file."""
         try:
             config = {
-                'last_version': self.version_entry.get().strip()
+                'folder_versions': self.folder_versions if hasattr(self, 'folder_versions') else {}
             }
-            with open(self.config_file, 'w') as f:
-                json.dump(config, f, indent=2)
+            self.save_config_from_dict(config)
         except Exception as e:
             print(f"Could not save config: {e}")
 

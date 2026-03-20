@@ -23,7 +23,7 @@ modules:
       - install -D app_icon.png /app/share/icons/hicolor/1024x1024/apps/org.folderzipper.versioning.png
     sources:
       - type: archive
-        url: https://github.com/codingismynewgaming/folder-zip-versioning/archive/refs/tags/v1.0.tar.gz
+        url: https://github.com/codingismynewgaming/folder-zip-versioning/archive/refs/tags/v1.2.tar.gz
         sha256: PLACEHOLDER_UPDATE_ON_RELEASE
         dest: folderzipper-versioning-src
       - type: file

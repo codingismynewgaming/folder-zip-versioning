@@ -1,20 +1,20 @@
 #!/bin/bash
-# Build Linux packages for FolderZipperVersioning v1.0
+# Build Linux packages for FolderZipperVersioning v1.2
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "🔨 Building Linux packages for FolderZipperVersioning v1.0..."
+echo "🔨 Building Linux packages for FolderZipperVersioning v1.2..."
 
 # Create builds directory
 mkdir -p builds
 
 # Build .deb package
 echo "📦 Building Debian package..."
-dpkg-deb --build debian builds/folder-zipper-versioning_1.0_all.deb
-echo "✓ Debian package created: builds/folder-zipper-versioning_1.0_all.deb"
+dpkg-deb --build debian builds/folder-zipper-versioning_1.2_all.deb
+echo "✓ Debian package created: builds/folder-zipper-versioning_1.2_all.deb"
 
 # Build Arch package (requires makepkg)
 if command -v makepkg &> /dev/null; then

@@ -2,7 +2,7 @@
 
 A Python Tkinter GUI application that zips folders with automatic version numbering.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 ![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux-lightgrey.svg)
@@ -41,19 +41,19 @@ python app-files/zipper.py
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt install ./builds/folder-zipper-versioning_1.0_all.deb
+sudo apt install ./builds/folder-zipper-versioning_1.2_all.deb
 folder-zipper-versioning
 ```
 
 **Arch Linux:**
 ```bash
-sudo pacman -U builds/folder-zipper-versioning-1.0-1-any.pkg.tar.zst
+sudo pacman -U builds/folder-zipper-versioning-1.2-1-any.pkg.tar.zst
 folder-zipper-versioning
 ```
 
 **Fedora/RHEL:**
 ```bash
-sudo dnf install builds/folder-zipper-versioning-1.0-1.noarch.rpm
+sudo dnf install builds/folder-zipper-versioning-1.2-1.noarch.rpm
 folder-zipper-versioning
 ```
 
@@ -72,8 +72,8 @@ python3 app-files/zipper.py
 3. (Optional) Enter a custom version number
 4. Click "Zip Selected Folder"
 5. The zip file is created in the parent directory with format:
-   - Auto-version: `foldername_001_2026-03-14_16-30.zip`
-   - Custom version: `1.0-foldername_2026-03-14_16-30.zip`
+   - Auto-version: `foldername_001_2026-03-20_16-30.zip`
+   - Custom version: `1.2-foldername_2026-03-20_16-30.zip`
 
 📖 See [docs/USAGE.md](docs/USAGE.md) for detailed usage guide.
 

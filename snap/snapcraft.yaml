@@ -1,6 +1,6 @@
 name: folderzipper-versioning
 base: core24
-version: '1.0'
+version: '1.2'
 summary: Folder compression with versioning
 description: |
   FolderZipperVersioning is a smart backup utility for compressing 
@@ -11,7 +11,7 @@ description: |
   Features:
   - Easy folder selection via built-in browser
   - Automatic version numbering (001, 002, 003...)
-  - Custom version input field (e.g., 1.0.1)
+  - Custom version input field (e.g., 1.2)
   - Timestamp in zip filenames
   - Dark mode support
   - Directory navigation
@@ -34,7 +34,7 @@ apps:
 parts:
   folderzipper-versioning:
     plugin: dump
-    source: https://github.com/codingismynewgaming/folder-zip-versioning/releases/download/v1.0/FolderZipperVersioning-Linux.tar.gz
+    source: https://github.com/codingismynewgaming/folder-zip-versioning/releases/download/v1.2/FolderZipperVersioning-Linux.tar.gz
     organize:
       FolderZipperVersioning: bin/folderzipper-versioning
     stage-packages:

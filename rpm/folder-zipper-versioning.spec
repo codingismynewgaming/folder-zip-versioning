@@ -1,5 +1,5 @@
 Name:           folder-zipper-versioning
-Version:        1.0
+Version:        1.2
 Release:        1%{?dist}
 Summary:        Folder Zipper with automatic versioning
 License:        MIT
@@ -84,6 +84,10 @@ fi
 /usr/share/doc/%{name}/README.md
 
 %changelog
+* Fri Mar 20 2026 Your Name <your.email@example.com> - 1.2-1
+- Update to version 1.2
+- Per-folder version memory and UI refinements
+
 * Sat Mar 14 2026 Your Name <your.email@example.com> - 1.0-1
 - Initial package release
 - Folder Zipper with versioning GUI application

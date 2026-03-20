@@ -6,8 +6,8 @@ $installerType = 'EXE'
 $silentArgs   = '/VERYSILENT'
 $validExitCodes = @(0)
 
-$version = '1.0.0'
-$url = 'https://github.com/codingismynewgaming/folder-zip-versioning/releases/download/v' + $version + '/FolderZipperVersioning.exe'
+$version = '1.2.0'
+$url = "https://github.com/codingismynewgaming/folder-zip-versioning/releases/download/v1.2/FolderZipperVersioning.exe"
 
 # Get SHA256 hash dynamically
 $checksum = (Get-FileHash -Uri $url -Algorithm SHA256).Hash

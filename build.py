@@ -201,7 +201,7 @@ def build_rpm_package():
     
     # Create source tarball
     import tarfile
-    source_name = f"folder-zipper-versioning-1.0"
+    source_name = f"folder-zipper-versioning-1.2"
     tarball_path = os.path.join(rpmbuild_base, "SOURCES", f"{source_name}.tar.gz")
     
     # Copy desktop file and icon to rpm folder

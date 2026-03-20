@@ -33,6 +33,11 @@
   <developer_name>codingismynewgaming</developer_name>
   <update_contact>jan.michael.kuehn.bln@gmail.com</update_contact>
   <releases>
+    <release version="1.2" date="2026-03-20">
+      <description>
+        <p>Fixed folder selection persistence and added per-folder version memory.</p>
+      </description>
+    </release>
     <release version="1.0" date="2026-03-14">
       <description>
         <p>Initial release with professional app icon and cross-platform support</p>

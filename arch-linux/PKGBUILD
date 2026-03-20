@@ -1,6 +1,6 @@
 # Maintainer: Your Name <your.email@example.com>
 pkgname=folder-zipper-versioning
-pkgver=1.0
+pkgver=1.2
 pkgrel=1
 pkgdesc="Folder Zipper with automatic versioning - A Tkinter GUI app"
 arch=('any')
@@ -22,7 +22,7 @@ build() {
 
 package() {
   # Install the main application
-  install -Dm755 "${srcdir}/folder-zipper-versioning-1.0/app-files/zipper.py" "${pkgdir}/usr/bin/folder-zipper-versioning"
+  install -Dm755 "${srcdir}/folder-zipper-versioning-${pkgver}/app-files/zipper.py" "${pkgdir}/usr/bin/folder-zipper-versioning"
   
   # Install desktop file
   install -Dm644 "${srcdir}/folder-zipper-versioning.desktop" \
@@ -33,5 +33,5 @@ package() {
     "${pkgdir}/usr/share/icons/hicolor/256x256/apps/folder-zipper-versioning.png"
   
   # Install license
-  install -Dm644 "${srcdir}/folder-zipper-versioning-1.0/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 "${srcdir}/folder-zipper-versioning-${pkgver}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
