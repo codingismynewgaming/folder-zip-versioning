@@ -27,7 +27,7 @@ jobs:
           snap info ${{ steps.build-snap.outputs.snap }} || true
 
       - name: Upload Snap Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: folderzipper-versioning-snap
           path: ${{ steps.build-snap.outputs.snap }}

@@ -52,7 +52,7 @@ jobs:
           dpkg-deb --build debian-pkg builds/folder-zipper-versioning_1.1_all.deb
 
       - name: Upload .deb Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: folder-zipper-versioning-deb
           path: builds/*.deb
@@ -95,7 +95,7 @@ jobs:
           cp ~/rpmbuild/RPMS/noarch/*.rpm builds/
 
       - name: Upload .rpm Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: folder-zipper-versioning-rpm
           path: builds/*.rpm
@@ -141,7 +141,7 @@ jobs:
           cp arch-linux/*.pkg.tar.zst builds/
 
       - name: Upload .pkg.tar.zst Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: folder-zipper-versioning-arch
           path: builds/*.pkg.tar.zst
