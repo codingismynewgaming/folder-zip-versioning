@@ -3,4 +3,4 @@
 # - tkinter, zipfile, os, pathlib, re, datetime, winreg
 # No external dependencies required for running!
 
-pyinstaller>=6.0.0
+pyinstaller>=6.20.0
